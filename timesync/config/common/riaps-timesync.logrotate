@@ -1,0 +1,16 @@
+/var/log/ptp4l.log
+/var/log/phc2sys.log
+/var/log/chrony.log
+/var/log/gpsd.log
+/var/log/timesync.log
+{
+        rotate 7
+        daily
+        missingok
+        notifempty
+        delaycompress
+        compress
+        postrotate
+	        invoke-rc.d rsyslog rotate >/dev/null 2>&1 || true
+        endscript
+}

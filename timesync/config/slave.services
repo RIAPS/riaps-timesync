@@ -1,0 +1,7 @@
+- gpsd.service
+- gpsd.socket
+- chrony.service
++ ptp4l.service
++ phc2sys.service
++ rsyslog.service
++ timesyncd.service

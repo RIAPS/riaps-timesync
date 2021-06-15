@@ -1,0 +1,291 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""timesyncctl - RIAPS time synchronization management program
+
+Copyright 2017, Peter Volgyesi, Vanderbilt University
+"""
+import sys
+import os
+import logging
+import hashlib
+import subprocess
+import imp
+
+CURRENT_ROLE_PATH = '/etc/timesync.role'
+CONFIG = {}
+
+def do_config(rolename):
+    """Reconfigure timesync services based on the selected rolename"""
+    if os.geteuid() != 0:
+        logging.critical('Restart operation requires root privileges, re-run with "su"')
+        return
+
+    if rolename not in CONFIG['roles']:
+        logging.critical('Does not know how to configure role: %s', CONFIG['role'])
+        return
+
+    hooks = CONFIG['roles'][rolename]['hooks']
+    services = CONFIG['roles'][rolename]['services']
+
+    if hasattr(hooks, 'before_config'):
+        logging.debug('Executing role-specific perparation steps')
+        hooks.before_config()
+
+    logging.info('Updating configuration files')
+    source_prefix = CONFIG['roles'][rolename]['root']
+    for dirpath, dirs, files in os.walk(source_prefix):
+        target_prefix = dirpath[len(source_prefix):]
+        if not target_prefix:
+            target_prefix = '/'
+        for dname in dirs:
+            target_dir = os.path.join(target_prefix, dname)
+            if not os.path.isdir(target_dir):
+                os.makedirs(target_dir)
+                logging.debug("Creating missing configuration directory: %s", target_dir)
+        for fname in files:
+            source_file = os.path.join(dirpath, fname)
+            target_file = os.path.join(target_prefix, fname)
+            logging.debug("Overwriting configuration file: %s", target_file)
+            with open(source_file, 'rb') as sf, open(target_file, 'wb') as tf:
+                tf.write(sf.read())
+
+    logging.info('Enabling services')
+    for service_status, service_name in services:
+        with open(os.devnull, 'wb') as hide_output:
+            if service_status == '+':
+                logging.debug('Enable service: %s', service_name)
+                exit_code = subprocess.Popen(['systemctl', 'enable', service_name],
+                                             stdout=hide_output, stderr=hide_output).wait()
+                if exit_code != 0:
+                    logging.warning("Service %s cannot be enabled", service_name)
+            else:
+                logging.debug('Disable service: %s', service_name)
+                exit_code = subprocess.Popen(['systemctl', 'disable', service_name],
+                                             stdout=hide_output, stderr=hide_output).wait()
+                if exit_code != 0:
+                    logging.warning("Service %s cannot be disabled (should not be enabled)", service_name)
+
+    if hasattr(hooks, 'after_config'):
+        logging.debug('Executing role-specific finishing steps')
+        hooks.after_config()
+
+    CONFIG['role'] = rolename
+    with open(CURRENT_ROLE_PATH, 'w') as f_role:
+        f_role.write(rolename)
+
+    do_restart()
+
+
+def do_list_configs():
+    """List known role names"""
+    print('Available roles:', ', '.join(CONFIG['roles'].keys()))
+
+
+def do_status():
+    """Checks the status of timesync services of the configured role"""
+    every_ok = True
+
+    if CONFIG['role'] not in CONFIG['roles']:
+        logging.critical('Does not know how to restart services for role: %s', CONFIG['role'])
+        return
+
+    rolename = CONFIG['role']
+    hooks = CONFIG['roles'][rolename]['hooks']
+    services = CONFIG['roles'][rolename]['services']
+
+    logging.debug('Verifying configuration files')
+    source_prefix = CONFIG['roles'][rolename]['root']
+    for dirpath, dirs, files in os.walk(source_prefix):
+        target_prefix = dirpath[len(source_prefix):]
+        if not target_prefix:
+            target_prefix = '/'
+        for dname in dirs:
+            target_dir = os.path.join(target_prefix, dname)
+            if not os.path.isdir(target_dir):
+                logging.warning("Missing configuration directory: %s", target_dir)
+                every_ok = False
+        for fname in files:
+            target_file = os.path.join(target_prefix, fname)
+            if not os.path.isfile(target_file):
+                logging.warning("Missing configuration file: %s", target_file)
+                every_ok = False
+            else:
+                source_file = os.path.join(dirpath, fname)
+                logging.debug('Comparing %s vs %s', source_file, target_file)
+                source_sha1 = hashlib.sha1()
+                source_sha1.update(open(source_file, "rb").read())
+                target_sha1 = hashlib.sha1()
+                target_sha1.update(open(target_file, "rb").read())
+                #if source_sha1.digest() != target_sha1.digest():
+                #    logging.warning("Corrupt configuration file: %s", target_file)
+                #    every_ok = False
+
+    logging.debug('Verifying services')
+    for service_status, service_name in services:
+        logging.debug('Checking service: %s', service_name)
+        with open(os.devnull, 'wb') as hide_output:
+            proc = subprocess.Popen(['systemctl', 'is-enabled', service_name],
+                                         stdout=subprocess.PIPE, stderr=hide_output)
+            out, err = proc.communicate()
+            is_enabled = "enabled" in out.decode()
+            if service_status == '+':
+                if not is_enabled:
+                    logging.warning("Service %s is not enabled", service_name)
+                    every_ok = False
+            elif is_enabled:
+                logging.warning("Service %s is enabled (should be disabled)", service_name)
+                every_ok = False
+
+            exit_code = subprocess.Popen(['systemctl', 'is-active', service_name],
+                                         stdout=hide_output, stderr=hide_output).wait()
+            if service_status == '+':
+                if exit_code != 0:
+                    logging.warning("Service %s is not running", service_name)
+                    every_ok = False
+            elif exit_code == 0:
+                logging.warning("Service %s is running (should not)", service_name)
+                every_ok = False
+
+    if hasattr(hooks, 'check_status'):
+        logging.debug('Verifying role-specific rules')
+        every_ok &= hooks.check_status()
+
+    if every_ok:
+        logging.info('Everything looks fine for role: %s', rolename)
+    else:
+        logging.warning('Misconfigured role: %s, try using "restart" or "config"', rolename)
+
+def do_restart():
+    """Restart timesync services of the configured role"""
+    if os.geteuid() != 0:
+        logging.critical('Restart operation requires root privileges, re-run with "su"')
+        return
+
+    if CONFIG['role'] not in CONFIG['roles']:
+        logging.critical('Does not know how to check status for role: %s', CONFIG['role'])
+        return
+
+    rolename = CONFIG['role']
+    hooks = CONFIG['roles'][rolename]['hooks']
+    services = CONFIG['roles'][rolename]['services']
+
+    if hasattr(hooks, 'before_restart'):
+        logging.debug('Executing role-specific perparation steps')
+        hooks.before_restart()
+
+    logging.info('Restarting services')
+    for service_status, service_name in services:
+        with open(os.devnull, 'wb') as hide_output:
+            if service_status == '+':
+                logging.debug('Restarting service: %s', service_name)
+                exit_code = subprocess.Popen(['systemctl', 'restart', service_name],
+                                             stdout=hide_output, stderr=hide_output).wait()
+                if exit_code != 0:
+                    logging.warning("Service %s cannot be started", service_name)
+            else:
+                logging.debug('Stoping service: %s', service_name)
+                exit_code = subprocess.Popen(['systemctl', 'stop', service_name],
+                                             stdout=hide_output, stderr=hide_output).wait()
+                if exit_code != 0:
+                    logging.warning("Service %s cannot be stopped (should not be running)", service_name)
+
+    if hasattr(hooks, 'after_restart'):
+        logging.debug('Executing role-specific finishing steps')
+        hooks.after_restart()
+
+def init_config():
+    """Initialize in-memory configuration database"""
+    CONFIG['db'] = find_config_db()
+
+    if CONFIG['db'] is None:
+        logging.critical('Cannot find configuration database')
+        sys.exit(1)
+    else:
+        logging.debug('Using configuration database: %s', CONFIG['db'])
+
+    roles = {}
+    for dname in os.listdir(CONFIG['db']):
+        if dname.endswith('.root'):
+            rolename = os.path.splitext(dname)[0]
+            roles[rolename] = {'root': os.path.join(CONFIG['db'], dname)}
+
+            services = os.path.join(CONFIG['db'], rolename + '.services')
+            if os.path.isfile(services):
+                roles[rolename]['services'] = [line.split() for line in open(services).readlines()]
+            else:
+                logging.warning('No services config file has been found for role %s', rolename)
+                roles[rolename]['services'] = []
+
+            hooks = os.path.join(CONFIG['db'], rolename + '.hooks')
+            if os.path.isfile(hooks):
+                roles[rolename]['hooks'] = imp.load_source(rolename + '_hooks', hooks)
+            else:
+                logging.warning('No hooks file has been found for role %s', rolename)
+                roles[rolename]['hooks'] = None
+
+
+    logging.debug('Found roles: %s', ', '.join(roles.keys()))
+    CONFIG['roles'] = roles
+
+    if os.path.isfile(CURRENT_ROLE_PATH):
+        with open(CURRENT_ROLE_PATH) as f_role:
+            CONFIG['role'] = f_role.read().strip()
+    else:
+        default_role = sorted(list(roles.keys()))[0]
+        logging.debug('Could not find current role setting, using default: %s', default_role)
+        CONFIG['role'] = default_role
+
+    logging.debug('Current role: %s', CONFIG['role'])
+    if CONFIG['role'] not in CONFIG['roles']:
+        logging.warning('Current role (%s) is not found in the configuration database', CONFIG['role'])
+
+def find_config_db():
+    """Find the root folder of the configuration database"""
+    search_path = [os.path.dirname(os.path.realpath(sys.argv[0])),
+                   '/usr/share/timesync',
+                   '/usr/local/share/timesync']
+    for root in search_path:
+        config_db = os.path.join(root, 'config')
+        if os.path.isdir(config_db):
+            return config_db
+
+def usage():
+    print('usage: %s <command> [args]' % (sys.argv[0]))
+    print('    valid commands:')
+    print('        config [<rolename>] - (re)configure timesync services')
+    print('                              list roles if no rolename is given')
+    print('        status              - checks timesync services')
+    print('        restart             - restart timesync services\n')
+
+
+def main(arguments):
+    """Entry point, see usage() for details."""
+
+    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
+    init_config()
+
+    if len(arguments) > 0:
+        if arguments[0] == 'config':
+            if len(arguments) == 2:
+                do_config(arguments[1])
+            elif len(arguments) == 1:
+                do_list_configs()
+            else:
+                return usage()
+        elif arguments[0] == 'status':
+            if len(arguments) == 1:
+                do_status()
+            else:
+                return usage()
+        elif arguments[0] == 'restart':
+            if len(arguments) == 1:
+                do_restart()
+            else:
+                return usage()
+        else:
+            return usage()
+    else:
+        return usage()
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1:]))

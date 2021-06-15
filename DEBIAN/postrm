@@ -1,0 +1,12 @@
+rm -f /etc/udev/rules.d/*-riaps-timesync.rules
+rm -rf /usr/arm-linux-gnueabihf/share/timesync/config/__pycache__
+rm -rf /usr/aarch64-linux-gnu/share/timesync/config/__pycache__
+rm -rf /usr/local/share/timesync/config/__pycache__
+rm -r /etc/systemd/system/timesyncd.service
+rm -r /etc/timesync.role
+
+# for previous uninstall
+rm -r /etc/tsman.role
+
+systemctl daemon-reload
+ldconfig

@@ -1,0 +1,12 @@
+[Unit]
+Description=Precision Time Protocol (PTP) service
+After=sys-devices-platform-ocp-4a100000.ethernet-ptp-ptp0.device  
+Wants=sys-devices-platform-ocp-4a100000.ethernet-ptp-ptp0.device  
+
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/ptp4l -f /etc/linuxptp/ptp4l.conf -i eth0
+
+[Install]
+WantedBy=multi-user.target

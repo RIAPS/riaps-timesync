@@ -1,0 +1,28 @@
+# hook functions for standalone role
+
+import logging
+
+def before_config():
+    """Execute custom steps before configuring new role."""
+    pass
+
+def after_config():
+    """Execute custom steps after configuring new role."""
+    pass
+
+def before_restart():
+    """Execute custom steps before restarting services."""
+    pass
+
+def after_restart():
+    """Execute custom steps after restarting services."""
+    pass
+
+def check_status():
+    """Return True of service status looks good, otherwise return False."""
+    looks_good = True
+
+    # TODO: check the current source of chrony
+    # TODO: check or briefly monitor logs for actual timesync performance
+
+    return looks_good

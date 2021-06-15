@@ -1,0 +1,6 @@
+systemctl stop chrony.service
+systemctl stop phc2sys.service
+systemctl stop ptp4l.service
+systemctl stop gpsd.service
+systemctl stop timesyncd.service
+systemctl disable timesyncd.service

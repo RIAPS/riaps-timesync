@@ -1,0 +1,4 @@
+KERNEL=="ttyS1", SYMLINK+="gps0"
+# KERNEL=="pps0", OWNER="root", GROUP="tty", MODE="0660", SYMLINK+="gpspps0"
+# KERNEL=="ttyS1", RUN+="/bin/setserial -v /dev/%k low_latency irq 4"
+ 
