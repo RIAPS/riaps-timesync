@@ -40,3 +40,5 @@ To configure the node for a master role:
 To check if everything is as expected in the current role:
 
     timesyncctl status
+
+> Note: This package is currently optimized for the BBB Remote nodes (which use all available modes).  The RIAPS VM (amd64 package) is intended to stay in `standalone` mode since we are using a virtual machine and hardware timestamping is not available.  The Raspberry Pi 3/4 and Jetson Nano do not support hardware timestamping, so only the `standalone` mode is also used for arm64 packages here.
