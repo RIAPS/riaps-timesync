@@ -26,7 +26,7 @@ class ChronyConfig():
         with open(self.CONFIG_PATH) as conf:
             in_riaps_timesync = False
             self.lines = conf.readlines()
-            for line in self.lines: 
+            for line in self.lines:
                 if self.RIAPS_TIMESYNC_END in line:
                     in_riaps_timesync = False
                 elif self.RIAPS_TIMESYNC_START in line:
@@ -88,21 +88,22 @@ def main():
     logging.basicConfig(format='%(levelname)s:%(message)s',
                         level=logging.INFO)
     while True:
-        ctrl_host_addrs = get_control_host_addrs()
-        has_gps = is_gps_available()
-        logging.info("env has_gps: %s, control_hosts: %s", str(has_gps), str(ctrl_host_addrs))
-
         conf = ChronyConfig()
         conf.load()
         logging.info("conf use_gps: %s, servers: %s", str(conf.use_gps), str(conf.servers))
 
-        if has_gps != conf.use_gps or (ctrl_host_addrs and sorted(ctrl_host_addrs) != sorted(conf.servers)):
-            logging.info("env-conf mismatch, reconfiguring")
-            conf.servers = ctrl_host_addrs
-            conf.use_gps = has_gps
-            conf.save()
-            subprocess.run(["systemctl", "restart", "chrony"])
+        # Disable auto-reconfiguration due to too many queries for the control host.
+        if False:
+            ctrl_host_addrs = get_control_host_addrs()
+            has_gps = is_gps_available()
+            logging.info("env has_gps: %s, control_hosts: %s", str(has_gps), str(ctrl_host_addrs))
 
+            if has_gps != conf.use_gps or (ctrl_host_addrs and sorted(ctrl_host_addrs) != sorted(conf.servers)):
+                logging.info("env-conf mismatch, reconfiguring")
+                conf.servers = ctrl_host_addrs
+                conf.use_gps = has_gps
+                conf.save()
+                subprocess.run(["systemctl", "restart", "chrony"])
 
         sleep()
 
@@ -111,7 +112,7 @@ if __name__ == "__main__":
     main()
 
 # RIAPS_TIMESYNC_START - DO NOT EDIT THIS SECTION
-#refclock PPS /dev/pps0 refid PPS lock NMEA 
+#refclock PPS /dev/pps0 refid PPS lock NMEA
 #refclock SHM 0 offset 0.212 delay 0.2 precision 1e-1 refid NMEA noselect
 #server <control_host> iburst
-# RIAPS_TIMESYNC_END 
+# RIAPS_TIMESYNC_END

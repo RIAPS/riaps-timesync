@@ -9,7 +9,8 @@ import os
 import logging
 import hashlib
 import subprocess
-import imp
+from importlib.machinery import SourceFileLoader
+from importlib.util import spec_from_loader, module_from_spec
 
 CURRENT_ROLE_PATH = '/etc/timesync.role'
 CONFIG = {}
@@ -218,7 +219,11 @@ def init_config():
 
             hooks = os.path.join(CONFIG['db'], rolename + '.hooks')
             if os.path.isfile(hooks):
-                roles[rolename]['hooks'] = imp.load_source(rolename + '_hooks', hooks)
+                hooks_loader = SourceFileLoader(rolename + '_hooks', hooks)
+                hooks_spec = spec_from_loader(hooks_loader.name, hooks_loader)
+                hooks_module = module_from_spec(hooks_spec)
+                hooks_loader.exec_module(hooks_module)
+                roles[rolename]['hooks'] = hooks_module
             else:
                 logging.warning('No hooks file has been found for role %s', rolename)
                 roles[rolename]['hooks'] = None

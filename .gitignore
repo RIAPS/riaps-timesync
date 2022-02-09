@@ -7,10 +7,11 @@ build-amd64/
 build-armhf/
 amd64-opt/
 armhf-opt/
-armhf/
+arm64-opt/
 package
 build-armhf
 build-amd64
+build-arm64
 CMakeCache.txt
 CMakeFiles
 CMakeScripts

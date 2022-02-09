@@ -40,3 +40,29 @@ To configure the node for a master role:
 To check if everything is as expected in the current role:
 
     timesyncctl status
+
+> Note: This package is currently optimized for the BBB Remote nodes (which use all available modes).  The RIAPS VM (amd64 package) is intended to stay in `standalone` mode since we are using a virtual machine and hardware timestamping is not available.  The Raspberry Pi 3/4 and Jetson Nano do not support hardware timestamping, so only the `standalone` mode is also used for arm64 packages here.
+
+### Check Node Synchronization
+
+An easy way to test that time is synchronized across nodes is to do the following on each node (including the VM):
+
+```
+git clone https://github.com/RIAPS/riaps-timesync.git
+cd riaps-timesync/python
+python3 test-timesync.py
+```
+
+This will provide time from riaps_timesync (riaps_ts) continuously until you use `Ctrl C` to stop it.  You can see that each of the nodes are sync’ed by comparing the output from this test.  Here is an example of the test output:
+
+```
+wake: 1637275707.000529669 secs
+wake: 1637275708.000811827 secs
+wake: 1637275709.000351160 secs
+```
+
+To do these commands using riaps_fab, use the following putting in the above command:
+
+```riaps_fab sys.run:’”<command>”’```
+
+>Note: to stop the program you need to do `Ctrl C` on the node or use `riaps_fab sys.sudo:’”pkill -f test_timesync.py”’`

@@ -1,4 +1,4 @@
-Package: riaps-timesync-amd64
+Package: riaps-timesync-arm64
 Architecture: arm64
 Maintainer: Institute for Software Integrated Systems
 Depends: debconf (>= 0.5.00), python3, chrony, linuxptp, gpsd
