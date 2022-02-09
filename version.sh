@@ -1,1 +1,1 @@
-export timesyncversion="1.1.19rc1"
+export timesyncversion="1.1.19"
