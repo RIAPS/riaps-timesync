@@ -21,7 +21,7 @@ subprocess.call('cd .. ; doxygen Doxyfile', shell=True)
 # -- Project information -----------------------------------------------------
 
 project = 'RIAPS Timesync'
-copyright = '2021, Vanderbilt University'
+copyright = '2022, Vanderbilt University'
 author = 'RIAPS Team'
 
 
