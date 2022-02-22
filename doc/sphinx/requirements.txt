@@ -1,1 +1,1 @@
-breathe==4.14.1
+breathe==4.33.1
