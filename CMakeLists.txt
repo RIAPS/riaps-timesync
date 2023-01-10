@@ -4,7 +4,7 @@
 #
 
 cmake_minimum_required (VERSION 3.0.0)
-project (riaps-timesync VERSION 1.1.19)
+project (riaps-timesync VERSION 1.1.20)
 
 set(arch "amd64" CACHE STRING "amd64/armhf/arm64")
 set(arch_independent_prefix "/usr/local" CACHE STRING "architecture independent prefix")
