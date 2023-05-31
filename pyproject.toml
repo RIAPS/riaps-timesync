@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "riaps-pycom"
+version = "@version@"
+authors = [
+  { name = "RIAPS", email = "riaps@vanderbilt.com" },
+]
+description = "python implementation of the RIAPS time synchronization"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: Linux",
+    "License :: OSI Approved :: Apache Software License"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/RIAPS/riaps-timesync"
+"Bug Tracker" = "https://github.com/RIAPS/riaps-timesync/issues"
+
+[tool.setuptools.packages.find]
+where = ["python"]
+
+[project.scripts]
+test_timesync = "riaps_ts.test_timesync:main"
