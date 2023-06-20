@@ -3,10 +3,11 @@ requires = ["setuptools", "setuptools_scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "riaps-pycom"
-version = "@version@"
+name = "riaps-timesync"
+# version = "@version@" - use when install with .deb package
+version = "1.1.22rc1"
 authors = [
-  { name = "RIAPS", email = "riaps@vanderbilt.com" },
+  { name = "Vanderbilt University Institute for Software Integrated Systems"},
 ]
 description = "python implementation of the RIAPS time synchronization"
 readme = "README.md"
