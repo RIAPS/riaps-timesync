@@ -2,6 +2,10 @@ set -e
 rm -rf  package
 source version.sh
 
+# Current DEBIAN package does not install python package
+# If it gets added, include moving pyproject.toml, LICENSE, README.md and python folder
+# Also update the version number with sed @version@.  Using hardcoded version for now in pyproject.toml
+
 #AMD64
 mkdir -p package/riaps-timesync-amd64/DEBIAN
 mkdir -p package/riaps-timesync-amd64/usr/local/lib/
