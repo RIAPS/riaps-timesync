@@ -1,7 +1,7 @@
 
 set -e
 
-source version.sh
+# source version.sh
 rm -rf build-amd64
 mkdir build-amd64
 pushd  build-amd64
