@@ -16,9 +16,9 @@ elseif (${arch} STREQUAL "arm64")
   set(TOOLCHAIN_PREFIX aarch64-linux-gnu)
 elseif (${arch} STREQUAL "am64xx-evm")
   set(TOOLCHAIN_PREFIX aarch64-oe-linux)
-else()
-  set(arch_independent_prefix "/usr/local" CACHE STRING "architecture independent prefix")
 endif()
+
+set(arch_independent_prefix "/usr/local" CACHE STRING "architecture independent prefix")
 
 if (${arch} STREQUAL "amd64")
   set(CMAKE_C_COMPILER gcc)
