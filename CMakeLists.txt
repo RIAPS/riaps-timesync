@@ -9,12 +9,12 @@ project (riaps-timesync VERSION 1.1.20)
 set(arch "amd64" CACHE STRING "amd64/armhf/arm64/am64xx-evm")
 
 # Set the platform
+# Setup am64xx-evm to use in Yocto recipe on the TI AM64-SK with based Kirkstone release (>= 9.00.00.03)
 if (${arch} STREQUAL "armhf")
   set(TOOLCHAIN_PREFIX arm-linux-gnueabihf)
 elseif (${arch} STREQUAL "arm64")
   set(TOOLCHAIN_PREFIX aarch64-linux-gnu)
 elseif (${arch} STREQUAL "am64xx-evm")
-  # Setup to use in Yocto recipe on the TI AM64-SK with based Kirkstone release (>= 9.00.00.03)
   set(TOOLCHAIN_PREFIX aarch64-oe-linux)
 else
   set(arch_independent_prefix "/usr/local" CACHE STRING "architecture independent prefix")
