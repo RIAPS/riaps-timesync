@@ -4,7 +4,7 @@
 #
 
 cmake_minimum_required (VERSION 3.0.0)
-project (riaps-timesync VERSION 1.1.20)
+project (riaps-timesync VERSION 1.1.21)
 
 set(arch "amd64" CACHE STRING "amd64/armhf/arm64/am64xx-evm")
 
@@ -18,6 +18,7 @@ elseif (${arch} STREQUAL "am64xx-evm")
   set(TOOLCHAIN_PREFIX aarch64-oe-linux)
 else
   set(arch_independent_prefix "/usr/local" CACHE STRING "architecture independent prefix")
+
 
 if (${arch} STREQUAL "amd64")
   set(CMAKE_C_COMPILER gcc)
