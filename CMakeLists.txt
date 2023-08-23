@@ -21,12 +21,22 @@ endif()
 set(arch_independent_prefix "/usr/local" CACHE STRING "architecture independent prefix")
 
 if (${arch} STREQUAL "amd64")
+  # Native compile
   set(CMAKE_C_COMPILER gcc)
   set(CMAKE_CXX_COMPILER g++)
   set(CMAKE_CXX_FLAGS "-std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0")
   set(CMAKE_INSTALL_PREFIX ${arch_independent_prefix})
   set(DEPENDENCIES ${arch_independent_prefix})
+elseif (${arch} STREQUAL "am64xx-evm")
+  # Native compile with toolchain from TI AM64 SDK instructions
+  set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}-gcc)
+  set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-g++)
+  set(CMAKE_FIND_ROOT_PATH /usr/${TOOLCHAIN_PREFIX})
+  set(CMAKE_CXX_FLAGS "-std=c++11")
+  set(CMAKE_INSTALL_PREFIX ${arch_independent_prefix})
+  set(DEPENDENCIES ${arch_independent_prefix})
 else()
+  # Cross compiling armhf and arm64
   set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}-gcc)
   set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-g++)
   set(CMAKE_FIND_ROOT_PATH /usr/${TOOLCHAIN_PREFIX})
