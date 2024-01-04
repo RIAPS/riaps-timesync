@@ -2,7 +2,7 @@
 RIAPS Timesync Service
 ======================
 
-Copyright (C) Vanderbilt University, ISIS 2016
+Copyright (C) Vanderbilt University, ISIS 2016-2024
 """
 import os
 import ctypes

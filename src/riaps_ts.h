@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (c) 2016-2019, Vanderbilt University.                          *
+ * Copyright (c) 2016-2024, Vanderbilt University.                          *
  *                                                                          *
  * Developed with the sponsorship of the                                    *
  * Advanced Research Projects Agency – Energy (ARPA-E)                      *

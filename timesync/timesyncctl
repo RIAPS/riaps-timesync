@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """timesyncctl - RIAPS time synchronization management program
 
-Copyright 2017, Peter Volgyesi, Vanderbilt University
+Copyright 2017-2024, Peter Volgyesi, Vanderbilt University
 """
 import sys
 import os
