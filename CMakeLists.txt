@@ -1,6 +1,6 @@
 # RIAPS Timesync Service
 #
-# Copyright (C) Vanderbilt University, ISIS 2016-2017
+# Copyright (C) Vanderbilt University, ISIS 2016-2024
 #
 
 cmake_minimum_required (VERSION 3.0.0)
