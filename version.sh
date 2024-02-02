@@ -3,4 +3,4 @@
 #   - CMakeLists.txt
 #   - pyproject.toml
 #   - doc/Doxyfile
-export timesyncversion="1.1.23"
+export timesyncversion="2.0.0rc1"
