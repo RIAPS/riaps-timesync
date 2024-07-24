@@ -2,8 +2,6 @@
 
 Time synchronization service, instrumentation and tests for the RIAPS platform.
 
-[![Build Status](https://travis-ci.com/RIAPS/riaps-timesync.svg?token=QQcruvP29rqE9b8AjB5C&branch=master)](https://travis-ci.com/RIAPS/riaps-timesync)
-
 ## Time synchronization configuration tool: timesyncctl
 
 The release (.deb) packages contain a configuration tool, called **timesyncctl** for an easy, semi-automated way for configuring a node for distributed time synchronization.
